@@ -10,8 +10,8 @@ const nextConfig = {
   async headers() {
     return [
       {
-        // Aplicar headers para rotas de API (exceto live data)
-        source: '/api/(?!live/(pt|es)).*',
+        // Headers padrão para outras rotas de API
+        source: '/api/:path*',
         headers: [
           {
             key: 'Cache-Control',
@@ -32,8 +32,38 @@ const nextConfig = {
         ],
       },
       {
-        // Headers específicos para rotas de live data (sem cache)
-        source: '/api/live/(pt|es)',
+        // Headers específicos para rotas de live data (sem cache) - sobrescreve o padrão
+        source: '/api/live/pt',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'no-cache, no-store, must-revalidate, max-age=0',
+          },
+          {
+            key: 'Pragma',
+            value: 'no-cache',
+          },
+          {
+            key: 'Expires',
+            value: '0',
+          },
+          {
+            key: 'Access-Control-Allow-Origin',
+            value: '*',
+          },
+          {
+            key: 'Access-Control-Allow-Methods',
+            value: 'GET, OPTIONS',
+          },
+          {
+            key: 'Access-Control-Allow-Headers',
+            value: 'Content-Type',
+          },
+        ],
+      },
+      {
+        // Headers específicos para rotas de live data (sem cache) - sobrescreve o padrão
+        source: '/api/live/es',
         headers: [
           {
             key: 'Cache-Control',
