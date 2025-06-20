@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { updateLiveData } from '@/lib/data';
+import { updateLiveData, getStorageStatus } from '@/lib/data';
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,11 +24,14 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Dados atualizados com sucesso');
 
+    const storageStatus = getStorageStatus();
+
     return NextResponse.json({ 
       message: 'Dados atualizados com sucesso',
       data: body,
       environment: process.env.NODE_ENV,
-      isVercel: process.env.VERCEL === '1'
+      isVercel: process.env.VERCEL === '1',
+      storage: storageStatus
     });
   } catch (error) {
     console.error('❌ Erro na atualização:', error);

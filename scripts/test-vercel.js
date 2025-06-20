@@ -1,7 +1,7 @@
 const BASE_URL = process.argv[2] || 'http://localhost:3000';
 
 async function testVercel() {
-  console.log('🧪 Testando funcionalidade na Vercel...\n');
+  console.log('🧪 Testando funcionalidade na Vercel com Neon Database...\n');
   console.log(`📍 URL base: ${BASE_URL}\n`);
 
   // 1. Verificar ambiente e dados atuais
@@ -12,6 +12,8 @@ async function testVercel() {
     
     console.log('   Ambiente:', debugData.environment);
     console.log('   É Vercel:', debugData.isVercel);
+    console.log('   Conexão com banco:', debugData.databaseConnection ? '✅ Conectado' : '❌ Não conectado');
+    console.log('   Tipo de armazenamento:', debugData.storage.storageType);
     console.log('   Dados atuais:', JSON.stringify(debugData.currentData, null, 2));
     console.log('');
   } catch (error) {
@@ -19,8 +21,27 @@ async function testVercel() {
     console.log('');
   }
 
-  // 2. Testar atualização de dados
-  console.log('2. Testando atualização de dados...');
+  // 2. Inicializar banco se necessário
+  console.log('2. Verificando inicialização do banco...');
+  try {
+    const initResponse = await fetch(`${BASE_URL}/api/init-db`, {
+      method: 'POST',
+    });
+    const initResult = await initResponse.json();
+    
+    if (initResponse.ok) {
+      console.log('   ✅ Banco inicializado com sucesso');
+    } else {
+      console.log('   ⚠️ Banco já inicializado ou erro:', initResult.message);
+    }
+    console.log('');
+  } catch (error) {
+    console.log('   ❌ Erro ao inicializar banco:', error.message);
+    console.log('');
+  }
+
+  // 3. Testar atualização de dados
+  console.log('3. Testando atualização de dados...');
   const testData = {
     acf: {
       live_pt: {
@@ -51,6 +72,7 @@ async function testVercel() {
     
     if (updateResponse.ok) {
       console.log('   ✅ Atualização bem-sucedida!');
+      console.log('   Tipo de armazenamento usado:', updateResult.storage.storageType);
       console.log('   Resposta:', JSON.stringify(updateResult, null, 2));
     } else {
       console.log('   ❌ Erro na atualização:');
@@ -63,8 +85,8 @@ async function testVercel() {
     console.log('');
   }
 
-  // 3. Verificar dados após atualização
-  console.log('3. Verificando dados após atualização...');
+  // 4. Verificar dados após atualização
+  console.log('4. Verificando dados após atualização...');
   try {
     const debugResponse2 = await fetch(`${BASE_URL}/api/debug/data`);
     const debugData2 = await debugResponse2.json();
@@ -76,8 +98,8 @@ async function testVercel() {
     console.log('');
   }
 
-  // 4. Testar APIs de dados
-  console.log('4. Testando APIs de dados...');
+  // 5. Testar APIs de dados
+  console.log('5. Testando APIs de dados...');
   
   try {
     const ptResponse = await fetch(`${BASE_URL}/api/live/pt`);
