@@ -43,14 +43,14 @@ interface ServerMetrics {
     pt: {
       totalRequests: number;
       totalErrors: number;
-      requestsPerMinute: number;
+      requestsPerSecond: number;
       averageResponseTime: number;
       errorRate: number;
     };
     es: {
       totalRequests: number;
       totalErrors: number;
-      requestsPerMinute: number;
+      requestsPerSecond: number;
       averageResponseTime: number;
       errorRate: number;
     };
@@ -71,14 +71,14 @@ export default function ServerMetrics() {
     labels: string[];
     ptResponseTimes: number[];
     esResponseTimes: number[];
-    ptRequestsPerMinute: number[];
-    esRequestsPerMinute: number[];
+    ptRequestsPerSecond: number[];
+    esRequestsPerSecond: number[];
   }>({
     labels: [],
     ptResponseTimes: [],
     esResponseTimes: [],
-    ptRequestsPerMinute: [],
-    esRequestsPerMinute: [],
+    ptRequestsPerSecond: [],
+    esRequestsPerSecond: [],
   });
 
   const intervalRef = useRef<NodeJS.Timeout>();
@@ -97,8 +97,8 @@ export default function ServerMetrics() {
             labels: [...prev.labels.slice(-19), now], // Manter últimos 20 pontos
             ptResponseTimes: [...prev.ptResponseTimes.slice(-19), data.apis.pt.averageResponseTime],
             esResponseTimes: [...prev.esResponseTimes.slice(-19), data.apis.es.averageResponseTime],
-            ptRequestsPerMinute: [...prev.ptRequestsPerMinute.slice(-19), data.apis.pt.requestsPerMinute],
-            esRequestsPerMinute: [...prev.esRequestsPerMinute.slice(-19), data.apis.es.requestsPerMinute],
+            ptRequestsPerSecond: [...prev.ptRequestsPerSecond.slice(-19), data.apis.pt.requestsPerSecond],
+            esRequestsPerSecond: [...prev.esRequestsPerSecond.slice(-19), data.apis.es.requestsPerSecond],
           }));
         }
       } catch (error) {
@@ -152,15 +152,15 @@ export default function ServerMetrics() {
     labels: historicalData.labels,
     datasets: [
       {
-        label: 'API PT - Requisições/min',
-        data: historicalData.ptRequestsPerMinute,
+        label: 'API PT - Requisições/s',
+        data: historicalData.ptRequestsPerSecond,
         borderColor: 'rgb(34, 197, 94)',
         backgroundColor: 'rgba(34, 197, 94, 0.1)',
         tension: 0.4,
       },
       {
-        label: 'API ES - Requisições/min',
-        data: historicalData.esRequestsPerMinute,
+        label: 'API ES - Requisições/s',
+        data: historicalData.esRequestsPerSecond,
         borderColor: 'rgb(168, 85, 247)',
         backgroundColor: 'rgba(168, 85, 247, 0.1)',
         tension: 0.4,
@@ -224,8 +224,8 @@ export default function ServerMetrics() {
               <p className="text-2xl font-bold text-blue-900">{metrics.apis.pt.totalRequests}</p>
             </div>
             <div>
-              <p className="text-sm text-blue-600">Req/min</p>
-              <p className="text-2xl font-bold text-blue-900">{metrics.apis.pt.requestsPerMinute}</p>
+              <p className="text-sm text-blue-600">Req/s</p>
+              <p className="text-2xl font-bold text-blue-900">{metrics.apis.pt.requestsPerSecond.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-blue-600">Tempo Médio (ms)</p>
@@ -247,8 +247,8 @@ export default function ServerMetrics() {
               <p className="text-2xl font-bold text-red-900">{metrics.apis.es.totalRequests}</p>
             </div>
             <div>
-              <p className="text-sm text-red-600">Req/min</p>
-              <p className="text-2xl font-bold text-red-900">{metrics.apis.es.requestsPerMinute}</p>
+              <p className="text-sm text-red-600">Req/s</p>
+              <p className="text-2xl font-bold text-red-900">{metrics.apis.es.requestsPerSecond.toFixed(2)}</p>
             </div>
             <div>
               <p className="text-sm text-red-600">Tempo Médio (ms)</p>
@@ -272,7 +272,7 @@ export default function ServerMetrics() {
 
         {/* Gráfico de requisições por minuto */}
         <div className="bg-gray-50 p-4 rounded">
-          <h3 className="text-lg font-semibold mb-4">Requisições por Minuto por API</h3>
+          <h3 className="text-lg font-semibold mb-4">Requisições por Segundo por API</h3>
           <Line data={requestsChartData} options={chartOptions} />
         </div>
       </div>

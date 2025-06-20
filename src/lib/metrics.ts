@@ -59,16 +59,22 @@ export const getMetrics = () => {
   // Calcular tempos médios de resposta (simulado por enquanto)
   const ptAvgResponseTime = metrics.pt.responseTimes.length > 0 ? 50 : 0; // Simulado
   const esAvgResponseTime = metrics.es.responseTimes.length > 0 ? 45 : 0; // Simulado
-  
+
+  // Calcular requisições por segundo (últimos 60s)
+  const ptRPS = metrics.pt.responseTimes.length / 60;
+  const esRPS = metrics.es.responseTimes.length / 60;
+
   return {
     ...metrics,
     pt: {
       ...metrics.pt,
       averageResponseTime: ptAvgResponseTime,
+      requestsPerSecond: ptRPS,
     },
     es: {
       ...metrics.es,
       averageResponseTime: esAvgResponseTime,
+      requestsPerSecond: esRPS,
     },
   };
 };

@@ -40,14 +40,14 @@ export async function GET() {
         pt: {
           totalRequests: metrics.pt.requests,
           totalErrors: metrics.pt.errors,
-          requestsPerMinute: metrics.pt.responseTimes.length,
+          requestsPerSecond: metrics.pt.requestsPerSecond,
           averageResponseTime: metrics.pt.averageResponseTime,
           errorRate: metrics.pt.requests > 0 ? Math.round((metrics.pt.errors / metrics.pt.requests) * 100 * 100) / 100 : 0,
         },
         es: {
           totalRequests: metrics.es.requests,
           totalErrors: metrics.es.errors,
-          requestsPerMinute: metrics.es.responseTimes.length,
+          requestsPerSecond: metrics.es.requestsPerSecond,
           averageResponseTime: metrics.es.averageResponseTime,
           errorRate: metrics.es.requests > 0 ? Math.round((metrics.es.errors / metrics.es.requests) * 100 * 100) / 100 : 0,
         },
