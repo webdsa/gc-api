@@ -19,15 +19,19 @@ export default function Home() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [copyMessage, setCopyMessage] = useState("");
   const [apiStatus, setApiStatus] = useState({ pt: false, es: false, test: false });
+  const [storageInfo, setStorageInfo] = useState<any>(null);
 
   // Carregar dados do arquivo quando a página carregar
   useEffect(() => {
     const loadData = async () => {
       try {
+        console.log('🔄 Carregando dados do formulário...');
         const response = await fetch('/api/live/all');
         if (response.ok) {
           const data = await response.json();
           const { pt, es } = data;
+          
+          console.log('📥 Dados carregados:', { pt, es });
           
           // Atualizar dados PT
           setEnabledPT(pt.enabled);
@@ -40,15 +44,33 @@ export default function Home() {
           setTitleES(es.title);
           setVideoIDES(es.videoID);
           setDescriptionES(es.description);
+          
+          console.log('✅ Dados do formulário carregados com sucesso');
+        } else {
+          console.error('❌ Erro ao carregar dados:', response.status);
         }
       } catch (error) {
-        console.error('Erro ao carregar dados:', error);
+        console.error('❌ Erro ao carregar dados:', error);
       } finally {
         setIsLoadingData(false);
       }
     };
 
+    const loadStorageInfo = async () => {
+      try {
+        const response = await fetch('/api/debug/data');
+        if (response.ok) {
+          const data = await response.json();
+          setStorageInfo(data.storage);
+          console.log('📊 Informações de armazenamento:', data.storage);
+        }
+      } catch (error) {
+        console.error('❌ Erro ao carregar informações de armazenamento:', error);
+      }
+    };
+
     loadData();
+    loadStorageInfo();
   }, []);
 
   // Testar status das APIs
@@ -184,6 +206,76 @@ export default function Home() {
             </div>
           </div>
         </div>
+
+        {/* Informações de Armazenamento */}
+        {storageInfo && (
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Informações de Armazenamento</h2>
+            <div className="bg-white p-4 rounded shadow">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Ambiente</p>
+                  <p className="font-semibold">{storageInfo.environment}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Tipo de Armazenamento</p>
+                  <p className="font-semibold">
+                    {storageInfo.storageType === 'Database' && (
+                      <span className="text-green-600">🟢 Neon Database</span>
+                    )}
+                    {storageInfo.storageType === 'Memory (Fallback)' && (
+                      <span className="text-yellow-600">🟡 Memória (Fallback)</span>
+                    )}
+                    {storageInfo.storageType === 'File' && (
+                      <span className="text-blue-600">🔵 Arquivo Local</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Banco Disponível</p>
+                  <p className="font-semibold">
+                    {storageInfo.hasDatabase ? (
+                      <span className="text-green-600">✅ Sim</span>
+                    ) : (
+                      <span className="text-red-600">❌ Não</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">É Vercel</p>
+                  <p className="font-semibold">
+                    {storageInfo.isVercel ? (
+                      <span className="text-green-600">✅ Sim</span>
+                    ) : (
+                      <span className="text-gray-600">❌ Não (Local)</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              {storageInfo.storageType === 'Database' && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                  <p className="text-sm text-green-800">
+                    ✅ Os dados estão sendo carregados e salvos no <strong>Neon Database</strong>
+                  </p>
+                </div>
+              )}
+              {storageInfo.storageType === 'Memory (Fallback)' && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ Os dados estão sendo salvos em memória (banco não disponível)
+                  </p>
+                </div>
+              )}
+              {storageInfo.storageType === 'File' && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-800">
+                    ℹ️ Os dados estão sendo salvos em arquivo local (desenvolvimento)
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         <form
           onSubmit={handleSubmit}
