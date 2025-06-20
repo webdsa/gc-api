@@ -143,7 +143,46 @@ const getCachedData = async () => {
   return cache;
 };
 
-export const getLiveData = async (lang: 'pt' | 'es') => {
+export const getLiveData = async (lang: 'pt' | 'es', forceFresh: boolean = false) => {
+  if (forceFresh) {
+    // Forçar busca de dados frescos, ignorando cache
+    console.log(`🔄 Buscando dados frescos para ${lang}...`);
+    
+    // Verificar status do banco em tempo real
+    let currentDatabaseAvailable = databaseAvailable;
+    if (isProduction) {
+      try {
+        currentDatabaseAvailable = await checkDatabaseConnection();
+        console.log(`🔍 Status do banco verificado para ${lang}:`, currentDatabaseAvailable);
+      } catch (error) {
+        console.error(`❌ Erro ao verificar status do banco para ${lang}:`, error);
+        currentDatabaseAvailable = false;
+      }
+    }
+    
+    if (isProduction && currentDatabaseAvailable) {
+      // Em produção com banco disponível, carregar do banco
+      try {
+        const data = await getLiveDataFromDB(lang);
+        console.log(`📊 Dados frescos ${lang} carregados do banco:`, data);
+        return data;
+      } catch (error) {
+        console.error(`❌ Erro ao carregar dados frescos ${lang} do banco:`, error);
+        return memoryData[lang];
+      }
+    } else if (isProduction) {
+      // Em produção sem banco, usar memória
+      console.log(`📊 Dados frescos ${lang} carregados da memória`);
+      return memoryData[lang];
+    } else {
+      // Em desenvolvimento, carregar do arquivo
+      const data = await loadDataFromFile();
+      console.log(`📊 Dados frescos ${lang} carregados do arquivo`);
+      return data[lang];
+    }
+  }
+  
+  // Comportamento normal com cache
   const data = await getCachedData();
   return data[lang];
 };

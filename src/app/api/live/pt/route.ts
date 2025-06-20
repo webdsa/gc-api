@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getLiveData } from '@/lib/data';
+import { getLiveData, clearCache } from '@/lib/data';
 import { recordPTRequest, recordPTError } from '@/lib/metrics';
 import { performance } from 'perf_hooks';
 
@@ -7,7 +7,12 @@ export async function GET() {
   const startTime = performance.now();
   
   try {
-    const ptData = await getLiveData('pt');
+    // Limpar cache para garantir dados mais recentes
+    clearCache();
+    console.log('🔄 Cache limpo para API PT - buscando dados mais recentes');
+    
+    const ptData = await getLiveData('pt', true); // Forçar dados frescos
+    console.log('📊 Dados PT carregados:', ptData);
     
     const response = {
       acf: {
@@ -21,11 +26,7 @@ export async function GET() {
 
     return NextResponse.json(response, {
       headers: {
-        'Cache-Control': 'public, max-age=5, s-maxage=5', // Cache por 5 segundos
         'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type',
       },
     });
   } catch (error) {
@@ -36,7 +37,9 @@ export async function GET() {
       { 
         status: 500,
         headers: {
-          'Cache-Control': 'no-cache',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
           'Content-Type': 'application/json',
         }
       }
