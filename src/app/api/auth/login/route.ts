@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 
-// In a real application, you would store these in a database
-// and hash the passwords properly
+// ==========================================
+// ALTERE AQUI O USUÁRIO E SENHA DE LOGIN
+// ==========================================
 const VALID_CREDENTIALS = {
-  username: 'admin',
-  password: 'password123',
+  username: 'admin',        // ← Altere o usuário aqui
+  password: 'password123',  // ← Altere a senha aqui
 };
+// ==========================================
 
 export async function POST(request: NextRequest) {
   try {
