@@ -110,14 +110,19 @@ export default function Home() {
         body: JSON.stringify(jsonResult),
       });
 
+      const responseData = await response.json();
+
       if (response.ok) {
         setMessage("Dados salvos com sucesso!");
         setShowJson(true);
+        console.log('✅ Resposta do servidor:', responseData);
       } else {
-        setMessage("Erro ao salvar os dados");
+        console.error('❌ Erro na resposta:', responseData);
+        setMessage(`Erro ao salvar os dados: ${responseData.error || 'Erro desconhecido'}`);
       }
     } catch (error) {
-      setMessage("Erro ao salvar os dados");
+      console.error('❌ Erro na requisição:', error);
+      setMessage(`Erro ao salvar os dados: ${error instanceof Error ? error.message : 'Erro de rede'}`);
     } finally {
       setIsLoading(false);
     }

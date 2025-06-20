@@ -1,3 +1,6 @@
+"use client";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ServerMetrics from "@/components/ServerMetrics";
 
 export default function MetricsPage() {
