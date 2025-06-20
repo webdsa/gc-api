@@ -1,55 +1,6 @@
 import { NextResponse } from 'next/server';
 import { performance } from 'perf_hooks';
-
-// Métricas em memória específicas para PT e ES
-let metrics = {
-  pt: {
-    requests: 0,
-    errors: 0,
-    responseTimes: [] as number[],
-  },
-  es: {
-    requests: 0,
-    errors: 0,
-    responseTimes: [] as number[],
-  },
-  startTime: Date.now(),
-};
-
-// Limpar métricas antigas (manter apenas últimos 60 segundos)
-const cleanupOldMetrics = (endpoint: 'pt' | 'es') => {
-  const oneMinuteAgo = Date.now() - 60000;
-  metrics[endpoint].responseTimes = metrics[endpoint].responseTimes.filter(time => time > oneMinuteAgo);
-};
-
-// Função para registrar requisição PT
-export const recordPTRequest = (responseTime: number) => {
-  metrics.pt.requests++;
-  metrics.pt.responseTimes.push(responseTime);
-};
-
-// Função para registrar requisição ES
-export const recordESRequest = (responseTime: number) => {
-  metrics.es.requests++;
-  metrics.es.responseTimes.push(responseTime);
-};
-
-// Função para registrar erro PT
-export const recordPTError = () => {
-  metrics.pt.errors++;
-};
-
-// Função para registrar erro ES
-export const recordESError = () => {
-  metrics.es.errors++;
-};
-
-// Função para obter métricas (para uso interno)
-export const getMetrics = () => {
-  cleanupOldMetrics('pt');
-  cleanupOldMetrics('es');
-  return metrics;
-};
+import { getMetrics } from '@/lib/metrics';
 
 export async function GET() {
   const startTime = performance.now();
@@ -64,15 +15,6 @@ export async function GET() {
     
     // Obter métricas das APIs
     const metrics = getMetrics();
-    
-    // Calcular médias
-    const ptAvgResponseTime = metrics.pt.responseTimes.length > 0 
-      ? metrics.pt.responseTimes.reduce((a, b) => a + b, 0) / metrics.pt.responseTimes.length 
-      : 0;
-    
-    const esAvgResponseTime = metrics.es.responseTimes.length > 0 
-      ? metrics.es.responseTimes.reduce((a, b) => a + b, 0) / metrics.es.responseTimes.length 
-      : 0;
     
     const uptime = Date.now() - metrics.startTime;
     const totalRequests = metrics.pt.requests + metrics.es.requests;
@@ -99,14 +41,14 @@ export async function GET() {
           totalRequests: metrics.pt.requests,
           totalErrors: metrics.pt.errors,
           requestsPerMinute: metrics.pt.responseTimes.length,
-          averageResponseTime: Math.round(ptAvgResponseTime),
+          averageResponseTime: metrics.pt.averageResponseTime,
           errorRate: metrics.pt.requests > 0 ? Math.round((metrics.pt.errors / metrics.pt.requests) * 100 * 100) / 100 : 0,
         },
         es: {
           totalRequests: metrics.es.requests,
           totalErrors: metrics.es.errors,
           requestsPerMinute: metrics.es.responseTimes.length,
-          averageResponseTime: Math.round(esAvgResponseTime),
+          averageResponseTime: metrics.es.averageResponseTime,
           errorRate: metrics.es.requests > 0 ? Math.round((metrics.es.errors / metrics.es.requests) * 100 * 100) / 100 : 0,
         },
       },
@@ -127,6 +69,7 @@ export async function GET() {
       },
     });
   } catch (error) {
+    console.error('Erro ao coletar métricas:', error);
     return NextResponse.json(
       { error: 'Failed to collect metrics' },
       { status: 500 }

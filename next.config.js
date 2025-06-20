@@ -44,12 +44,4 @@ const nextConfig = {
   poweredByHeader: false,
 };
 
-// Otimizações específicas para produção
-if (process.env.NODE_ENV === 'production') {
-  nextConfig.experimental = {
-    ...nextConfig.experimental,
-    optimizeCss: true,
-  };
-}
-
 module.exports = nextConfig; 
