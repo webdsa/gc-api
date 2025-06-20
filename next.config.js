@@ -42,15 +42,14 @@ const nextConfig = {
   
   // Configurações de performance
   poweredByHeader: false,
-  
-  // Otimizações para produção
-  ...(process.env.NODE_ENV === 'production' && {
-    // Otimizações específicas para produção
-    experimental: {
-      ...nextConfig.experimental,
-      optimizeCss: true,
-    },
-  }),
 };
+
+// Otimizações específicas para produção
+if (process.env.NODE_ENV === 'production') {
+  nextConfig.experimental = {
+    ...nextConfig.experimental,
+    optimizeCss: true,
+  };
+}
 
 module.exports = nextConfig; 
