@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getLiveData } from '@/lib/data';
+import { recordESRequest, recordESError } from '@/app/api/metrics/route';
+import { performance } from 'perf_hooks';
 
 export async function GET() {
+  const startTime = performance.now();
+  
   try {
     const esData = await getLiveData('es');
     
@@ -10,6 +14,10 @@ export async function GET() {
         live: esData
       }
     };
+
+    // Registrar métricas de sucesso
+    const responseTime = performance.now() - startTime;
+    recordESRequest(responseTime);
 
     return NextResponse.json(response, {
       headers: {
@@ -22,6 +30,7 @@ export async function GET() {
     });
   } catch (error) {
     console.error('Erro na API ES:', error);
+    recordESError(); // Registrar erro nas métricas
     return NextResponse.json(
       { error: 'Internal server error' },
       { 
