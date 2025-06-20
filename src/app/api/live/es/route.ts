@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getLiveData } from '@/lib/data';
-import { recordESRequest, recordESError } from '@/app/api/metrics/route';
+import { recordESRequest, recordESError } from '@/lib/metrics';
 import { performance } from 'perf_hooks';
 
 export async function GET() {

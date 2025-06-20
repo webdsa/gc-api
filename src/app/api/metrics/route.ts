@@ -22,6 +22,35 @@ const cleanupOldMetrics = (endpoint: 'pt' | 'es') => {
   metrics[endpoint].responseTimes = metrics[endpoint].responseTimes.filter(time => time > oneMinuteAgo);
 };
 
+// Função para registrar requisição PT
+export const recordPTRequest = (responseTime: number) => {
+  metrics.pt.requests++;
+  metrics.pt.responseTimes.push(responseTime);
+};
+
+// Função para registrar requisição ES
+export const recordESRequest = (responseTime: number) => {
+  metrics.es.requests++;
+  metrics.es.responseTimes.push(responseTime);
+};
+
+// Função para registrar erro PT
+export const recordPTError = () => {
+  metrics.pt.errors++;
+};
+
+// Função para registrar erro ES
+export const recordESError = () => {
+  metrics.es.errors++;
+};
+
+// Função para obter métricas (para uso interno)
+export const getMetrics = () => {
+  cleanupOldMetrics('pt');
+  cleanupOldMetrics('es');
+  return metrics;
+};
+
 export async function GET() {
   const startTime = performance.now();
   
@@ -33,9 +62,8 @@ export async function GET() {
     // Calcular tempo de resposta
     const responseTime = performance.now() - startTime;
     
-    // Limpar métricas antigas
-    cleanupOldMetrics('pt');
-    cleanupOldMetrics('es');
+    // Obter métricas das APIs
+    const metrics = getMetrics();
     
     // Calcular médias
     const ptAvgResponseTime = metrics.pt.responseTimes.length > 0 
@@ -104,33 +132,4 @@ export async function GET() {
       { status: 500 }
     );
   }
-}
-
-// Função para registrar requisição PT
-export const recordPTRequest = (responseTime: number) => {
-  metrics.pt.requests++;
-  metrics.pt.responseTimes.push(responseTime);
-};
-
-// Função para registrar requisição ES
-export const recordESRequest = (responseTime: number) => {
-  metrics.es.requests++;
-  metrics.es.responseTimes.push(responseTime);
-};
-
-// Função para registrar erro PT
-export const recordPTError = () => {
-  metrics.pt.errors++;
-};
-
-// Função para registrar erro ES
-export const recordESError = () => {
-  metrics.es.errors++;
-};
-
-// Função para obter métricas (para uso interno)
-export const getMetrics = () => {
-  cleanupOldMetrics('pt');
-  cleanupOldMetrics('es');
-  return metrics;
-}; 
+} 
