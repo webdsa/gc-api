@@ -73,6 +73,56 @@ export default function Home() {
     loadStorageInfo();
   }, []);
 
+  // Função para recarregar dados
+  const reloadData = async () => {
+    setIsLoadingData(true);
+    try {
+      console.log('🔄 Forçando recarregamento dos dados...');
+      
+      // Forçar recarregamento no servidor
+      const reloadResponse = await fetch('/api/debug/reload', {
+        method: 'POST'
+      });
+      
+      if (reloadResponse.ok) {
+        const reloadData = await reloadResponse.json();
+        console.log('📊 Dados recarregados no servidor:', reloadData);
+      }
+      
+      // Recarregar dados no formulário
+      const response = await fetch('/api/live/all');
+      if (response.ok) {
+        const data = await response.json();
+        const { pt, es } = data;
+        
+        console.log('📥 Dados recarregados no formulário:', { pt, es });
+        
+        // Atualizar dados PT
+        setEnabledPT(pt.enabled);
+        setTitlePT(pt.title);
+        setVideoIDPT(pt.videoID);
+        setDescriptionPT(pt.description);
+        
+        // Atualizar dados ES
+        setEnabledES(es.enabled);
+        setTitleES(es.title);
+        setVideoIDES(es.videoID);
+        setDescriptionES(es.description);
+        
+        console.log('✅ Dados do formulário recarregados com sucesso');
+        alert('Dados recarregados com sucesso!');
+      } else {
+        console.error('❌ Erro ao recarregar dados:', response.status);
+        alert('Erro ao recarregar dados!');
+      }
+    } catch (error) {
+      console.error('❌ Erro ao recarregar dados:', error);
+      alert('Erro ao recarregar dados!');
+    } finally {
+      setIsLoadingData(false);
+    }
+  };
+
   // Testar status das APIs
   useEffect(() => {
     const testApis = async () => {
@@ -429,7 +479,7 @@ export default function Home() {
               
               {/* Botão de teste para banco */}
               {storageInfo.hasDatabase && (
-                <div className="mt-4">
+                <div className="mt-4 flex gap-2">
                   <button
                     onClick={async () => {
                       try {
@@ -467,6 +517,14 @@ export default function Home() {
                     className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm"
                   >
                     🧪 Testar Atualização no Banco
+                  </button>
+                  
+                  <button
+                    onClick={reloadData}
+                    disabled={isLoadingData}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 text-sm disabled:opacity-50"
+                  >
+                    {isLoadingData ? '🔄 Recarregando...' : '🔄 Recarregar Dados'}
                   </button>
                 </div>
               )}

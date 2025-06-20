@@ -108,7 +108,19 @@ const getCachedData = async () => {
     return cache;
   }
   
-  if (isProduction && databaseAvailable) {
+  // Verificar status do banco em tempo real
+  let currentDatabaseAvailable = databaseAvailable;
+  if (isProduction) {
+    try {
+      currentDatabaseAvailable = await checkDatabaseConnection();
+      console.log('🔍 Status do banco verificado em tempo real:', currentDatabaseAvailable);
+    } catch (error) {
+      console.error('❌ Erro ao verificar status do banco:', error);
+      currentDatabaseAvailable = false;
+    }
+  }
+  
+  if (isProduction && currentDatabaseAvailable) {
     // Em produção com banco disponível, carregar do banco
     try {
       cache = await getAllLiveDataFromDB();
@@ -145,7 +157,19 @@ export const updateLiveData = async (lang: 'pt' | 'es', newData: any) => {
     vercel: process.env.VERCEL
   });
   
-  if (isProduction && databaseAvailable) {
+  // Verificar status do banco em tempo real
+  let currentDatabaseAvailable = databaseAvailable;
+  if (isProduction) {
+    try {
+      currentDatabaseAvailable = await checkDatabaseConnection();
+      console.log('🔍 Status do banco verificado em tempo real para atualização:', currentDatabaseAvailable);
+    } catch (error) {
+      console.error('❌ Erro ao verificar status do banco para atualização:', error);
+      currentDatabaseAvailable = false;
+    }
+  }
+  
+  if (isProduction && currentDatabaseAvailable) {
     // Em produção com banco disponível, salvar no banco
     try {
       console.log(`📝 Tentando salvar dados ${lang} no banco de dados...`);

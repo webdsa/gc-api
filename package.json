@@ -12,6 +12,7 @@
     "test-metrics": "node scripts/test-metrics.js",
     "test-pt-metrics": "node scripts/test-pt-metrics.js",
     "test-database-loading": "node scripts/test-database-loading.js",
+    "test-form-loading": "node scripts/test-form-loading.js",
     "check-env": "node scripts/check-env.js"
   },
   "dependencies": {

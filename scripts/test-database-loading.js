@@ -1,95 +1,98 @@
-const BASE_URL = process.argv[2] || 'http://localhost:3000';
+const { sql } = require('@vercel/postgres');
 
 async function testDatabaseLoading() {
-  console.log('🧪 Testando carregamento de dados do banco...\n');
-  console.log(`📍 URL base: ${BASE_URL}\n`);
-
-  // 1. Verificar informações de armazenamento
-  console.log('1. Verificando informações de armazenamento...');
-  try {
-    const debugResponse = await fetch(`${BASE_URL}/api/debug/data`);
-    const debugData = await debugResponse.json();
-    
-    console.log('   Ambiente:', debugData.environment);
-    console.log('   É Vercel:', debugData.isVercel);
-    console.log('   Tipo de armazenamento:', debugData.storage.storageType);
-    console.log('   Banco disponível:', debugData.storage.hasDatabase);
-    console.log('');
-  } catch (error) {
-    console.log('   ❌ Erro ao verificar debug:', error.message);
-    console.log('');
-  }
-
-  // 2. Carregar dados do formulário
-  console.log('2. Carregando dados do formulário...');
-  try {
-    const dataResponse = await fetch(`${BASE_URL}/api/live/all`);
-    const formData = await dataResponse.json();
-    
-    console.log('   ✅ Dados carregados com sucesso:');
-    console.log('   PT:', {
-      enabled: formData.pt.enabled,
-      title: formData.pt.title,
-      videoID: formData.pt.videoID,
-      description: formData.pt.description?.substring(0, 50) + '...'
-    });
-    console.log('   ES:', {
-      enabled: formData.es.enabled,
-      title: formData.es.title,
-      videoID: formData.es.videoID,
-      description: formData.es.description?.substring(0, 50) + '...'
-    });
-    console.log('');
-  } catch (error) {
-    console.log('   ❌ Erro ao carregar dados:', error.message);
-    console.log('');
-  }
-
-  // 3. Testar APIs individuais
-  console.log('3. Testando APIs individuais...');
+  console.log('🧪 Testando carregamento de dados do banco...');
   
   try {
-    const ptResponse = await fetch(`${BASE_URL}/api/live/pt`);
-    const ptData = await ptResponse.json();
-    console.log('   API PT:', ptResponse.status, ptData.acf ? '✅ Dados encontrados' : '❌ Sem dados');
-  } catch (error) {
-    console.log('   ❌ Erro API PT:', error.message);
-  }
-
-  try {
-    const esResponse = await fetch(`${BASE_URL}/api/live/es`);
-    const esData = await esResponse.json();
-    console.log('   API ES:', esResponse.status, esData.acf ? '✅ Dados encontrados' : '❌ Sem dados');
-  } catch (error) {
-    console.log('   ❌ Erro API ES:', error.message);
-  }
-
-  console.log('');
-
-  // 4. Simular carregamento de dados do formulário (como a página faz)
-  console.log('4. Simulando carregamento de dados do formulário...');
-  try {
-    const response = await fetch(`${BASE_URL}/api/live/all`);
-    if (response.ok) {
-      const data = await response.json();
-      const { pt, es } = data;
-      
-      console.log('   ✅ Dados carregados para o formulário:');
-      console.log('   PT - Enabled:', pt.enabled);
-      console.log('   PT - Title:', pt.title);
-      console.log('   PT - VideoID:', pt.videoID);
-      console.log('   ES - Enabled:', es.enabled);
-      console.log('   ES - Title:', es.title);
-      console.log('   ES - VideoID:', es.videoID);
-    } else {
-      console.log('   ❌ Erro ao carregar dados para formulário:', response.status);
+    // Testar conexão
+    console.log('1. Testando conexão...');
+    const connectionTest = await sql`SELECT 1 as test`;
+    console.log('✅ Conexão OK:', connectionTest.rows[0]);
+    
+    // Verificar se a tabela existe
+    console.log('\n2. Verificando estrutura da tabela...');
+    const tableInfo = await sql`
+      SELECT column_name, data_type, is_nullable 
+      FROM information_schema.columns 
+      WHERE table_name = 'live_data' 
+      ORDER BY ordinal_position
+    `;
+    
+    if (tableInfo.rows.length === 0) {
+      console.log('❌ Tabela live_data não existe!');
+      return;
     }
+    
+    console.log('✅ Estrutura da tabela:');
+    tableInfo.rows.forEach(row => {
+      console.log(`  - ${row.column_name}: ${row.data_type} (${row.is_nullable === 'YES' ? 'nullable' : 'not null'})`);
+    });
+    
+    // Verificar dados atuais
+    console.log('\n3. Dados atuais no banco:');
+    const currentData = await sql`
+      SELECT language, enabled, title, video_id, description, updated_at
+      FROM live_data 
+      ORDER BY language
+    `;
+    
+    if (currentData.rows.length === 0) {
+      console.log('⚠️ Nenhum dado encontrado na tabela');
+    } else {
+      console.log('📊 Dados encontrados:', currentData.rows.length, 'registros');
+      currentData.rows.forEach(row => {
+        console.log(`  ${row.language}: enabled=${row.enabled}, title="${row.title}", video_id="${row.video_id}"`);
+      });
+    }
+    
+    // Testar inserção de dados de exemplo se não existirem
+    console.log('\n4. Verificando dados de exemplo...');
+    const ptData = await sql`SELECT * FROM live_data WHERE language = 'pt'`;
+    const esData = await sql`SELECT * FROM live_data WHERE language = 'es'`;
+    
+    if (ptData.rows.length === 0) {
+      console.log('📝 Inserindo dados de exemplo para PT...');
+      await sql`
+        INSERT INTO live_data (language, enabled, title, video_id, description) 
+        VALUES ('pt', true, 'Live em Português', 'pt_video_123', 'Descrição da live em português')
+      `;
+      console.log('✅ Dados PT inseridos');
+    }
+    
+    if (esData.rows.length === 0) {
+      console.log('📝 Inserindo dados de exemplo para ES...');
+      await sql`
+        INSERT INTO live_data (language, enabled, title, video_id, description) 
+        VALUES ('es', true, 'Live en Español', 'es_video_456', 'Descripción de la live en español')
+      `;
+      console.log('✅ Dados ES inseridos');
+    }
+    
+    // Verificar dados finais
+    console.log('\n5. Dados finais no banco:');
+    const finalData = await sql`
+      SELECT language, enabled, title, video_id, description, updated_at
+      FROM live_data 
+      ORDER BY language
+    `;
+    
+    console.log('📊 Dados finais:', JSON.stringify(finalData.rows, null, 2));
+    
+    console.log('\n🎉 Teste de carregamento concluído com sucesso!');
+    console.log('\n💡 Para testar no frontend:');
+    console.log('1. Acesse a aplicação');
+    console.log('2. Clique em "🔄 Recarregar Dados"');
+    console.log('3. Verifique se os dados aparecem no formulário');
+    
   } catch (error) {
-    console.log('   ❌ Erro ao simular carregamento:', error.message);
+    console.error('❌ Erro no teste:', error);
+    console.error('Detalhes do erro:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail
+    });
   }
-
-  console.log('\n🏁 Teste de carregamento concluído!');
 }
 
 // Executar teste
-testDatabaseLoading().catch(console.error); 
+testDatabaseLoading(); 
