@@ -69,7 +69,14 @@ export async function getLiveDataFromDB(lang: 'pt' | 'es') {
 
 export async function updateLiveDataInDB(lang: 'pt' | 'es', data: any) {
   try {
-    await sql`
+    console.log(`📝 Iniciando UPDATE no banco para ${lang}:`, {
+      enabled: data.enabled || false,
+      title: data.title || '',
+      videoID: data.videoID || '',
+      description: data.description || ''
+    });
+    
+    const result = await sql`
       UPDATE live_data 
       SET 
         enabled = ${data.enabled || false},
@@ -78,12 +85,39 @@ export async function updateLiveDataInDB(lang: 'pt' | 'es', data: any) {
         description = ${data.description || ''},
         updated_at = NOW()
       WHERE language = ${lang}
+      RETURNING *
     `;
     
-    console.log(`📝 Dados ${lang} salvos no banco:`, data);
+    console.log(`✅ UPDATE executado para ${lang}. Linhas afetadas:`, result.rowCount);
+    console.log(`📊 Dados retornados do UPDATE:`, result.rows[0]);
+    
+    if (result.rowCount === 0) {
+      console.warn(`⚠️ Nenhuma linha foi atualizada para ${lang}. Verificando se o registro existe...`);
+      
+      // Verificar se o registro existe
+      const checkResult = await sql`
+        SELECT language FROM live_data WHERE language = ${lang}
+      `;
+      
+      if (checkResult.rows.length === 0) {
+        console.log(`📝 Registro ${lang} não existe. Criando...`);
+        await sql`
+          INSERT INTO live_data (language, enabled, title, video_id, description) 
+          VALUES (${lang}, ${data.enabled || false}, ${data.title || ''}, ${data.videoID || ''}, ${data.description || ''})
+        `;
+        console.log(`✅ Registro ${lang} criado com sucesso`);
+      }
+    }
+    
     return true;
   } catch (error) {
     console.error(`❌ Erro ao salvar dados ${lang} no banco:`, error);
+    console.error('Detalhes do erro:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      code: (error as any)?.code,
+      detail: (error as any)?.detail,
+      hint: (error as any)?.hint
+    });
     throw error;
   }
 }

@@ -188,6 +188,44 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 2. Verify database connection
 3. Check logs for errors
 
+### Database Updates Not Working in Production
+
+**Problem**: Data updates are not being saved to Neon Database in production.
+
+**Solution**:
+
+1. **Check Environment Variables**:
+   - Ensure `POSTGRES_URL` is set in Vercel Dashboard
+   - Go to Vercel Dashboard > Settings > Environment Variables
+   - Add `POSTGRES_URL` with your Neon connection string
+
+2. **Verify Database Connection**:
+   - Use the "🧪 Testar Atualização no Banco" button in the UI
+   - Check `/api/debug/data` endpoint
+   - Look for "Database" storage type in the UI
+
+3. **Initialize Database**:
+   ```bash
+   curl -X POST https://your-app.vercel.app/api/init-db
+   ```
+
+4. **Check Neon Console**:
+   - Verify your Neon project is active
+   - Check connection string format
+   - Ensure database is accessible
+
+5. **Common Issues**:
+   - Missing `POSTGRES_URL` environment variable
+   - Incorrect connection string format
+   - Neon project suspended or inactive
+   - Network connectivity issues
+
+**Debug Steps**:
+1. Deploy with the latest code (includes enhanced logging)
+2. Check Vercel function logs for database connection errors
+3. Use the debug endpoints to verify database status
+4. Test with the built-in database test button
+
 ## Contributing
 
 1. Fork the repository

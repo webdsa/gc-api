@@ -7,10 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test-vercel": "node scripts/test-vercel.js",
     "load-test": "node scripts/load-test.js",
     "test-metrics": "node scripts/test-metrics.js",
-    "test-vercel": "node scripts/test-vercel.js",
-    "test-database": "node scripts/test-database-loading.js"
+    "test-pt-metrics": "node scripts/test-pt-metrics.js",
+    "test-database-loading": "node scripts/test-database-loading.js",
+    "check-env": "node scripts/check-env.js"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.0.1",

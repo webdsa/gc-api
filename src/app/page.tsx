@@ -207,76 +207,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Informações de Armazenamento */}
-        {storageInfo && (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold mb-4">Informações de Armazenamento</h2>
-            <div className="bg-white p-4 rounded shadow">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Ambiente</p>
-                  <p className="font-semibold">{storageInfo.environment}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Tipo de Armazenamento</p>
-                  <p className="font-semibold">
-                    {storageInfo.storageType === 'Database' && (
-                      <span className="text-green-600">🟢 Neon Database</span>
-                    )}
-                    {storageInfo.storageType === 'Memory (Fallback)' && (
-                      <span className="text-yellow-600">🟡 Memória (Fallback)</span>
-                    )}
-                    {storageInfo.storageType === 'File' && (
-                      <span className="text-blue-600">🔵 Arquivo Local</span>
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Banco Disponível</p>
-                  <p className="font-semibold">
-                    {storageInfo.hasDatabase ? (
-                      <span className="text-green-600">✅ Sim</span>
-                    ) : (
-                      <span className="text-red-600">❌ Não</span>
-                    )}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">É Vercel</p>
-                  <p className="font-semibold">
-                    {storageInfo.isVercel ? (
-                      <span className="text-green-600">✅ Sim</span>
-                    ) : (
-                      <span className="text-gray-600">❌ Não (Local)</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              {storageInfo.storageType === 'Database' && (
-                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
-                  <p className="text-sm text-green-800">
-                    ✅ Os dados estão sendo carregados e salvos no <strong>Neon Database</strong>
-                  </p>
-                </div>
-              )}
-              {storageInfo.storageType === 'Memory (Fallback)' && (
-                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                  <p className="text-sm text-yellow-800">
-                    ⚠️ Os dados estão sendo salvos em memória (banco não disponível)
-                  </p>
-                </div>
-              )}
-              {storageInfo.storageType === 'File' && (
-                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
-                  <p className="text-sm text-blue-800">
-                    ℹ️ Os dados estão sendo salvos em arquivo local (desenvolvimento)
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
         <form
           onSubmit={handleSubmit}
           className="w-full bg-white rounded shadow p-6 flex flex-col items-center"
@@ -427,6 +357,120 @@ export default function Home() {
             <pre className="bg-white p-4 rounded shadow text-sm overflow-x-auto">
               {JSON.stringify(jsonResult, null, 2)}
             </pre>
+          </div>
+        )}
+
+        {/* Informações de Armazenamento */}
+        {storageInfo && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Informações de Armazenamento</h2>
+            <div className="bg-white p-4 rounded shadow">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-gray-600">Ambiente</p>
+                  <p className="font-semibold">{storageInfo.environment}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Tipo de Armazenamento</p>
+                  <p className="font-semibold">
+                    {storageInfo.storageType === 'Database' && (
+                      <span className="text-green-600">🟢 Neon Database</span>
+                    )}
+                    {storageInfo.storageType === 'Memory (Fallback)' && (
+                      <span className="text-yellow-600">🟡 Memória (Fallback)</span>
+                    )}
+                    {storageInfo.storageType === 'File' && (
+                      <span className="text-blue-600">🔵 Arquivo Local</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Banco Disponível</p>
+                  <p className="font-semibold">
+                    {storageInfo.hasDatabase ? (
+                      <span className="text-green-600">✅ Sim</span>
+                    ) : (
+                      <span className="text-red-600">❌ Não</span>
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">É Vercel</p>
+                  <p className="font-semibold">
+                    {storageInfo.isVercel ? (
+                      <span className="text-green-600">✅ Sim</span>
+                    ) : (
+                      <span className="text-gray-600">❌ Não (Local)</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              {storageInfo.storageType === 'Database' && (
+                <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                  <p className="text-sm text-green-800">
+                    ✅ Os dados estão sendo carregados e salvos no <strong>Neon Database</strong>
+                  </p>
+                </div>
+              )}
+              {storageInfo.storageType === 'Memory (Fallback)' && (
+                <div className="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                  <p className="text-sm text-yellow-800">
+                    ⚠️ Os dados estão sendo salvos em memória (banco não disponível)
+                  </p>
+                </div>
+              )}
+              {storageInfo.storageType === 'File' && (
+                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-blue-800">
+                    ℹ️ Os dados estão sendo salvos em arquivo local (desenvolvimento)
+                  </p>
+                </div>
+              )}
+              
+              {/* Botão de teste para banco */}
+              {storageInfo.hasDatabase && (
+                <div className="mt-4">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const testData = {
+                          acf: {
+                            live_pt: {
+                              enabled: true,
+                              title: 'Teste PT - ' + new Date().toISOString(),
+                              videoID: 'test_pt_' + Date.now(),
+                              description: 'Descrição de teste PT'
+                            },
+                            live_es: {
+                              enabled: true,
+                              title: 'Teste ES - ' + new Date().toISOString(),
+                              videoID: 'test_es_' + Date.now(),
+                              description: 'Descripción de prueba ES'
+                            }
+                          }
+                        };
+                        
+                        const response = await fetch('/api/debug/update', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify(testData)
+                        });
+                        
+                        const result = await response.json();
+                        console.log('🧪 Resultado do teste de atualização:', result);
+                        alert('Teste de atualização concluído! Verifique o console para detalhes.');
+                      } catch (error) {
+                        console.error('❌ Erro no teste:', error);
+                        alert('Erro no teste de atualização! Verifique o console.');
+                      }
+                    }}
+                    className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 text-sm"
+                  >
+                    🧪 Testar Atualização no Banco
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
