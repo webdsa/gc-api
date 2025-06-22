@@ -6,18 +6,9 @@ export interface Live {
 }
 
 export interface ACF {
-  year: number;
   live: Live;
 }
 
 export interface FormData {
-  acf: {
-    year: number;
-    live: {
-      enabled: boolean;
-      title: string;
-      videoID: string;
-      description: string;
-    };
-  };
+  acf: ACF;
 } 

@@ -4,34 +4,25 @@ import { useState, useEffect } from 'react';
 import { FormData } from '../types';
 import LanguageForm from './LanguageForm';
 
-export default function JsonManager() {
-  const [ptData, setPtData] = useState<FormData>({
-    acf: {
-      year: 2022,
-      live: {
-        enabled: false,
-        title: '',
-        videoID: '',
-        description: ''
-      }
+const initialFormData: FormData = {
+  acf: {
+    live: {
+      enabled: false,
+      title: '',
+      videoID: '',
+      description: ''
     }
-  });
+  }
+};
 
-  const [esData, setEsData] = useState<FormData>({
-    acf: {
-      year: 2022,
-      live: {
-        enabled: false,
-        title: '',
-        videoID: '',
-        description: ''
-      }
-    }
-  });
+export default function JsonManager() {
+  const [ptData, setPtData] = useState<FormData>({...initialFormData});
+  const [esData, setEsData] = useState<FormData>({...initialFormData});
 
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [uploadError, setUploadError] = useState('');
   const [jsonOutput, setJsonOutput] = useState<{pt?: string, es?: string}>({});
 
   useEffect(() => {
@@ -72,8 +63,26 @@ export default function JsonManager() {
           esResponse.json()
         ]);
 
-        setPtData(ptJson);
-        setEsData(esJson);
+        // Validar e normalizar os dados recebidos
+        const validateAndNormalize = (data: FormData | null): FormData => {
+          if (!data || !data.acf || !data.acf.live) {
+            return {...initialFormData};
+          }
+
+          return {
+            acf: {
+              live: {
+                enabled: Boolean(data.acf.live?.enabled),
+                title: String(data.acf.live?.title || ''),
+                videoID: String(data.acf.live?.videoID || ''),
+                description: String(data.acf.live?.description || '')
+              }
+            }
+          };
+        };
+
+        setPtData(validateAndNormalize(ptJson));
+        setEsData(validateAndNormalize(esJson));
         setIsLoading(false);
       } catch (error: unknown) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to load initial data';
@@ -87,6 +96,7 @@ export default function JsonManager() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setUploadError('');
 
     if (window.confirm('Do you want to update both language files in S3?')) {
       setUploadStatus('loading');
@@ -120,8 +130,14 @@ export default function JsonManager() {
           })
         ]);
 
+        const results = await Promise.all(responses.map(r => r.json()));
+
         if (!responses.every(r => r.ok)) {
-          throw new Error('Failed to upload to S3');
+          const errorMessages = results
+            .filter(r => r.error)
+            .map(r => r.error)
+            .join(', ');
+          throw new Error(errorMessages || 'Failed to upload to S3');
         }
 
         setJsonOutput({
@@ -134,6 +150,7 @@ export default function JsonManager() {
         const errorMessage = error instanceof Error ? error.message : 'Error uploading to S3';
         console.error('Error uploading to S3:', errorMessage);
         setUploadStatus('error');
+        setUploadError(errorMessage);
       }
     }
   };
@@ -195,7 +212,8 @@ export default function JsonManager() {
 
           {uploadStatus === 'error' && (
             <div className="mt-4 max-w-md mx-auto bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-              Failed to upload files to S3. Please try again.
+              <p className="font-medium">Failed to upload files to S3.</p>
+              {uploadError && <p className="mt-1 text-sm">{uploadError}</p>}
             </div>
           )}
         </div>

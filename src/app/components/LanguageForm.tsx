@@ -17,7 +17,7 @@ export default function LanguageForm({
   const [charCount, setCharCount] = useState(formData.acf.live.description.length);
   const maxChars = 450;
 
-  const handleChange = (field: string, value: string | boolean | number) => {
+  const handleChange = (field: string, value: string | boolean) => {
     const newData = {
       ...formData,
       acf: {
@@ -49,6 +49,7 @@ export default function LanguageForm({
             value={formData.acf.live.title}
             onChange={(e) => handleChange('title', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            maxLength={200}
           />
         </div>
 
@@ -61,6 +62,7 @@ export default function LanguageForm({
             value={formData.acf.live.videoID}
             onChange={(e) => handleChange('videoID', e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            maxLength={50}
           />
         </div>
 
