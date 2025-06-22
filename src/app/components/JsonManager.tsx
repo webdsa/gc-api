@@ -75,8 +75,9 @@ export default function JsonManager() {
         setPtData(ptJson);
         setEsData(esJson);
         setIsLoading(false);
-      } catch (err) {
-        setError('Failed to load initial data');
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Failed to load initial data';
+        setError(errorMessage);
         setIsLoading(false);
       }
     };
@@ -129,9 +130,10 @@ export default function JsonManager() {
         });
         setUploadStatus('success');
         setTimeout(() => setUploadStatus('idle'), 3000);
-      } catch (err) {
+      } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Error uploading to S3';
+        console.error('Error uploading to S3:', errorMessage);
         setUploadStatus('error');
-        console.error('Error uploading to S3:', err);
       }
     }
   };
@@ -161,20 +163,18 @@ export default function JsonManager() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <LanguageForm
-            language="pt_BR"
             title="Português"
             formData={ptData}
             onChange={setPtData}
           />
           <LanguageForm
-            language="es_ES"
             title="Español"
             formData={esData}
             onChange={setEsData}
           />
         </div>
 
-        <div className="sticky bottom-0 py-4 px-6 -mx-4">
+        <div className="sticky bottom-0 bg-white border-t py-4 px-6 -mx-4">
           <button
             type="submit"
             disabled={uploadStatus === 'loading'}

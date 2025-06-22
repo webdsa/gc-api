@@ -11,5 +11,13 @@ export interface ACF {
 }
 
 export interface FormData {
-  acf: ACF;
+  acf: {
+    year: number;
+    live: {
+      enabled: boolean;
+      title: string;
+      videoID: string;
+      description: string;
+    };
+  };
 } 
